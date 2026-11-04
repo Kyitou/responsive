@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .container{
+            width: 90%;
+            height: 400px;
+            margin: auto;
+            background:  rgb(255, 255, 255);
+        }
+        .navbar{
+            width: 100%;
+            height: auto;
+            /* background: black; */
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1%;
+        }
+        .logo{
+            width: 30%;
+            height: 50px;
+            background: red;
+        }
+        .manu{
+            width: 69%;
+            height: 50px;
+            background: pink;
+        }
+        .cover{
+            width: 100%;
+            height: 200px;
+            background: blue;
+            margin-bottom: 1%;
+        }
+        .content-box{
+            width: 100%;
+            height: auto;
+            background: rgb(255, 255, 255);
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1%;
+            
+        }
+        .content{
+            width: 69%;
+            height: 350px;
+            background: orange;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .adv{
+            width: 30%;
+            height: 350px;
+            background: yellow;
+        }
+        .cat-box{
+            width: 100%;
+            height: auto;
+            background: rgb(246, 236, 236);
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1%;
+        }
+        .cat{
+            width: 24%;
+            height: 200px;
+            background: lightblue;
+            
+        }
+        .footer{
+            width: 100%;
+            height: 200px;
+            background: rgb(151, 76, 76);
+            margin-top: 1%;
+        }    
+        
+        /* Tablet */
+        @media(max-width: 1279px) and (min-width: 481px){
+            .navbar{
+               flex-wrap: wrap;
+            }
+            .logo{
+                width: 100%;
+                margin-bottom: 1%;
+                
+            }
+            .manu{
+                width: 100%;
+                
+            }
+            .content-box{
+                flex-wrap: wrap;
+            }
+            .content{
+                width: 100%;
+                height: 300px;
+                margin-bottom: 1%;
+            }
+            .adv{
+                width: 100%;
+                height: 150px;
+            }
+            .cat-box{
+                flex-wrap: wrap;
+            }
+            .cat{
+                width: 49%;
+                margin-bottom: 1%;
+            }
+
+        }
+        @media(max-width: 480px){
+            .navbar{
+               flex-wrap: wrap;
+            }
+            .logo{
+                width: 100%;
+                margin-bottom: 1%;
+                
+            }
+            .manu{
+                width: 100%;
+                
+            }
+            .content-box{
+                flex-wrap: wrap;
+            }
+            .content{
+                width: 100%;
+                height: 300px;
+                margin-bottom: 1%;
+            }
+            .adv{
+                width: 100%;
+                height: 150px;
+            }
+            .cat-box{
+                flex-wrap: wrap;
+            }
+            .cat{
+                width: 100%;
+                height: 100px;
+                margin-bottom: 1%;
+            }
+
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="navbar">
+            <div class="logo">Logo</div>
+            <div class="manu">Manu</div>
+        </div>
+
+        <div class="cover">cover</div>
+
+        <div class="content-box">
+            <div class="content">content</div>
+            <div class="adv">adv</div>
+        </div> 
+
+        <div class="cat-box">
+            <div class="cat">Category Box 1 </div>
+            <div class="cat">Category Box 2</div>
+            <div class="cat">Category Box 3</div>
+            <div class="cat">Category Box 4</div>
+        </div>
+
+        <div class="footer">Footer</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,929 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pinterest-By Tou</title>
+    <link rel="icon" type="image/x-icon" href="Pinterest.svg.webp" />
+    <style>
+      :root {
+        --bg: #fff;
+        --ink: #111;
+        --muted: #767676;
+        --field: #e9e9e4;
+        --line: #e5e5e5;
+        --red: #e60023;
+        --sidebar: 68px;
+        --gap: 16px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        background: none;
+        border: 0;
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 2px solid var(--red);
+        outline-offset: 2px;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: var(--sidebar);
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        padding: 20px 0;
+        border-right: 1px solid var(--line);
+        background: var(--bg);
+      }
+      .sidebar .logo {
+        color: var(--red);
+        margin-bottom: 14px;
+      }
+      .sidebar .logo img {
+        display: block;
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+      }
+      .icon-btn {
+        position: relative;
+        display: grid;
+        place-items: center;
+        flex: 0 0 48px;
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+      }
+      .icon-btn:hover,
+      .icon-btn.active {
+        background: var(--field);
+      }
+      svg.i {
+        display: block;
+        width: 24px;
+        height: 24px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .dot {
+        position: absolute;
+        top: 11px;
+        right: 11px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--red);
+      }
+      .spacer {
+        flex: 1;
+      }
+
+      /* Labels appear beside the icon without moving other icons */
+      .icon-text {
+        position: absolute;
+        top: 50%;
+        left: 56px;
+        z-index: 100;
+        transform: translateY(-50%);
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: #000;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.15s;
+      }
+      .icon-btn.active .icon-text {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Top bar and search */
+      .main {
+        margin-left: var(--sidebar);
+      }
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 24px 8px 16px;
+        background: var(--bg);
+      }
+      .search {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        gap: 10px;
+        height: 48px;
+        padding: 0 16px;
+        border-radius: 24px;
+        background: var(--field);
+      }
+      .search input {
+        flex: 1;
+        min-width: 0;
+        border: 0;
+        outline: none;
+        background: transparent;
+        color: var(--ink);
+        font-size: 16px;
+      }
+      .search input::placeholder {
+        color: var(--muted);
+      }
+      .search .i {
+        width: 20px;
+        height: 20px;
+        color: var(--muted);
+      }
+      .search .tool {
+        margin-left: 4px;
+      }
+      .search .tool .i {
+        width: 24px;
+        height: 24px;
+        color: var(--ink);
+      }
+      .avatar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .avatar span {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f7d9a8, #e9a0b4);
+      }
+      .avatar .i {
+        width: 16px;
+        height: 16px;
+        color: var(--muted);
+      }
+      .tabs {
+        padding: 10px 16px 16px 32px;
+      }
+      .tab {
+        padding: 4px 4px 6px;
+        border-bottom: 3px solid var(--ink);
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      /* Masonry feed */
+      .feed {
+        column-width: 230px;
+        column-gap: var(--gap);
+        padding: 0 16px 40px;
+      }
+      .pin {
+        position: relative;
+        break-inside: avoid;
+        margin-bottom: 20px;
+      }
+      .thumb-wrap {
+        position: relative;
+        overflow: hidden;
+        border-radius: 16px;
+      }
+      .pin .thumb {
+        display: block;
+        width: 100%;
+        height: auto;
+        background: var(--field);
+        object-fit: cover;
+      }
+      .thumb-wrap:after {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0);
+        content: "";
+        pointer-events: none;
+        transition: background 0.15s;
+      }
+      .pin:hover .thumb-wrap:after {
+        background: rgba(0, 0, 0, 0.18);
+      }
+      .pin .save {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 2;
+        padding: 10px 16px;
+        border-radius: 24px;
+        background: var(--red);
+        color: #fff;
+        font-weight: 600;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+      .pin:hover .save,
+      .pin .save:focus-visible {
+        opacity: 1;
+      }
+      .pin .more {
+        display: block;
+        width: 32px;
+        height: 20px;
+        margin: 4px 0 0 auto;
+        color: var(--ink);
+        font-weight: 700;
+        letter-spacing: 1px;
+        line-height: 1;
+      }
+
+      /* Tablet */
+      @media (max-width: 1279px) and (min-width: 481px) {
+        :root {
+          --sidebar: 60px;
+          --gap: 12px;
+        }
+        .sidebar {
+          gap: 10px;
+          padding: 16px 0;
+        }
+        .sidebar .icon-btn {
+          flex-basis: 44px;
+          width: 44px;
+          height: 44px;
+        }
+        .topbar {
+          padding: 10px 16px 8px 12px;
+        }
+        .tabs {
+          padding: 8px 12px 12px 20px;
+        }
+        .feed {
+          column-width: 190px;
+          padding: 0 12px 32px;
+        }
+        .pin {
+          margin-bottom: 14px;
+        }
+      }
+
+      /* Mobile bottom navigation */
+      @media (max-width: 480px) {
+        :root {
+          --gap: 8px;
+        }
+        .sidebar {
+          inset: auto 0 0;
+          flex-direction: row;
+          justify-content: space-around;
+          gap: 0;
+          width: 100%;
+          height: 56px;
+          padding: 0 4px;
+          border-top: 1px solid var(--line);
+          border-right: 0;
+        }
+        .sidebar .logo,
+        .sidebar .spacer {
+          display: none;
+        }
+        .sidebar .icon-btn {
+          flex-basis: 44px;
+          width: 44px;
+          height: 44px;
+        }
+        .icon-text {
+          top: auto;
+          bottom: 50px;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+        .main {
+          margin-left: 0;
+          padding-bottom: 72px;
+        }
+        .topbar {
+          gap: 10px;
+          padding: 8px 10px;
+        }
+        .search {
+          height: 44px;
+          padding: 0 12px;
+        }
+        .tabs {
+          padding: 6px 10px 10px 14px;
+        }
+        .feed {
+          column-count: 2;
+          column-width: auto;
+          padding: 0 8px 24px;
+        }
+        .pin {
+          margin-bottom: 10px;
+        }
+        .thumb-wrap {
+          border-radius: 12px;
+        }
+        .pin .save {
+          top: 8px;
+          right: 8px;
+          padding: 6px 10px;
+          font-size: 13px;
+          opacity: 1;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+        }
+      }
+
+      /* Show icon labels on hover */
+      .icon-btn:hover .icon-text,
+      .icon-btn:focus-visible .icon-text,
+      .tool:hover .icon-text,
+      .tool:focus-visible .icon-text {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Top bar tool buttons: label below the icon */
+      .topbar > .tool {
+        position: relative;
+      }
+      .topbar > .tool .icon-text {
+        top: calc(100% + 8px);
+        left: 50%;
+        bottom: auto;
+        font-size: 10px;
+        padding: 6px 8px;
+        transform: translateX(-50%);
+        z-index: 1000;
+      }
+
+      /* ===== SEARCH PANEL ===== */
+      .search-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        background: rgba(0, 0, 0, 0.55);
+      }
+      .search-panel {
+        display: none;
+        position: absolute;
+        top: 68px;
+        left: 0;
+        right: 77px;
+        max-height: calc(100vh - 90px);
+        overflow-y: auto;
+        padding: 8px 24px 16px;
+        border-radius: 0 0 20px 20px;
+        background: var(--bg);
+      }
+      .search-panel h2 {
+        margin: 22px 0 12px;
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .sugg-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      .sugg {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 4px;
+        border-radius: 16px;
+        background: #f4f4f2;
+        text-align: left;
+        font-size: 16px;
+      }
+      .sugg:hover {
+        background: #e9e9e4;
+      }
+      .sugg img {
+        flex: 0 0 90px;
+        width: 90px;
+        height: 90px;
+        border-radius: 12px;
+        object-fit: cover;
+        background: var(--field);
+      }
+      .search-open .search-overlay,
+      .search-open .search-panel {
+        display: block;
+      }
+      .search-open .topbar {
+        z-index: 40;
+      }
+      .search-open .search {
+        outline: 3px solid #7bb3f0;
+      }
+
+      @media (max-width: 1279px) and (min-width: 481px) {
+        .search-panel {
+          left: 12px;
+          right: 16px;
+          top: 62px;
+        }
+        .sugg-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .sugg img {
+          flex-basis: 72px;
+          width: 72px;
+          height: 72px;
+        }
+      }
+      @media (max-width: 480px) {
+        .search-panel {
+          left: 8px;
+          right: 8px;
+          top: 56px;
+          padding: 4px 12px 12px;
+        }
+        .sugg-grid {
+          grid-template-columns: 1fr;
+        }
+        .sugg {
+          font-size: 15px;
+        }
+        .sugg img {
+          flex-basis: 56px;
+          width: 56px;
+          height: 56px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="search-overlay" id="searchOverlay"></div>
+
+    <nav class="sidebar" aria-label="Main navigation">
+      <a class="logo" href="#" aria-label="Pinterest home"
+        ><img
+          src="Pinterest.svg.webp"
+          alt="Pinterest logo"
+          width="32"
+          height="32"
+      /></a>
+
+      <button
+        class="icon-btn"
+        type="button"
+        aria-label="Home"
+        aria-expanded="false"
+        onclick="window.location.href = 'part1.html'"
+      >
+        <svg
+          class="i"
+          viewBox="0 0 24 24"
+          style="fill: currentColor; stroke: none"
+        >
+          <path d="M12 3C7 3 3.5 7 3.5 12v8h17v-8C20.5 7 17 3 12 3z" />
+        </svg>
+        <span class="icon-text">Home</span>
+      </button>
+
+      <button
+        class="icon-btn"
+        type="button"
+        aria-label="Explore"
+        aria-expanded="false"
+      >
+        <svg class="i" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="18" rx="4" />
+          <path d="M3 12h18M12 3v18" />
+        </svg>
+        <span class="icon-text">Explore</span>
+      </button>
+
+      <button
+        class="icon-btn"
+        type="button"
+        aria-label="Create"
+        aria-expanded="false"
+      >
+        <svg class="i" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="18" rx="4" />
+          <path d="M12 8v8M8 12h8" />
+        </svg>
+        <span class="icon-text">Create</span>
+      </button>
+
+      <button
+        class="icon-btn"
+        type="button"
+        aria-label="Updates"
+        aria-expanded="false"
+      >
+        <svg class="i" viewBox="0 0 24 24">
+          <path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z" />
+          <path d="M10 21h4" />
+        </svg>
+        <span class="dot" aria-hidden="true"></span>
+        <span class="icon-text">Updates</span>
+      </button>
+
+      <button
+        class="icon-btn"
+        type="button"
+        aria-label="Messages"
+        aria-expanded="false"
+      >
+        <svg class="i" viewBox="0 0 24 24">
+          <path d="M12 3a9 9 0 1 0 0 18h8l-2-3.5A9 9 0 0 0 12 3z" />
+          <path d="M8.5 12h.01M12 12h.01M15.5 12h.01" />
+        </svg>
+        <span class="icon-text">Messages</span>
+      </button>
+
+      <button
+        class="icon-btn"
+        type="button"
+        aria-label="Filters"
+        aria-expanded="false"
+      >
+        <svg class="i" viewBox="0 0 24 24">
+          <path d="M5 3v18M12 3v18M19 3v18M3 8h4M10 15h4M17 10h4" />
+        </svg>
+        <span class="icon-text">Filters</span>
+      </button>
+
+      <div class="spacer"></div>
+
+      <button
+        class="icon-btn"
+        type="button"
+        aria-label="Settings"
+        aria-expanded="false"
+      >
+        <svg class="i" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"
+          />
+        </svg>
+        <span class="icon-text">Settings</span>
+      </button>
+    </nav>
+
+    <div class="main">
+      <header class="topbar">
+        <label class="search">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-5-5" />
+          </svg>
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Search"
+            aria-label="Search"
+            autocomplete="off"
+          />
+        </label>
+
+        <button class="tool" type="button" aria-label="Search by image">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"
+            />
+            <circle cx="12" cy="12" r="3.5" />
+          </svg>
+          <span class="icon-text">Search by image</span>
+        </button>
+
+        <button class="tool" type="button" aria-label="Voice search">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="9" y="3" width="6" height="12" rx="3" />
+            <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+          </svg>
+          <span class="icon-text">Voice search</span>
+        </button>
+
+        <button class="avatar" type="button" aria-label="Account menu">
+          <a aria-hidden="true"
+            ><img
+              src="Pinterest.svg.webp"
+              alt="Pinterest logo"
+              width="32"
+              height="32"
+          /></a>
+        </button>
+
+        <!-- Search panel -->
+        <div class="search-panel" id="searchPanel">
+          <h2>Recent searches</h2>
+          <div class="sugg-grid">
+            <button class="sugg" type="button">
+              <img src="rub/1.jpg" alt="" /><span>pfp for instagram</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/2.jpg" alt="" /><span>display stand drink</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/3.jpg" alt="" /><span>display stand pepsi</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/4.jpg" alt="" /><span>display stand coca</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/5.jpg" alt="" /><span>display stand fanta</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/6.jpg" alt="" /><span>display stand</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/7.jpg" alt="" /><span>poster drink banner</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/8.jpg" alt="" /><span>cat</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/9.jpg" alt="" /><span
+                >out fit with converse white</span
+              >
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/10.jpg" alt="" /><span>floor stand</span>
+            </button>
+          </div>
+
+          <h2>Ideas for you</h2>
+          <div class="sugg-grid">
+            <button class="sugg" type="button">
+              <img src="rub/11.jpg" alt="" /><span>Son goku</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/12.jpg" alt="" /><span>Dragon ball wallpapers</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/13.jpg" alt="" /><span>Poster layout</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/14.jpg" alt="" /><span>Menu design</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/15.jpg" alt="" /><span>Motion design video</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/16.jpg" alt="" /><span>Funny cats</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/17.jpg" alt="" /><span>Animal memes</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/18.jpg" alt="" /><span>Galaxy wallpaper</span>
+            </button>
+          </div>
+
+          <h2>Popular on Pinterest</h2>
+          <div class="sugg-grid">
+            <button class="sugg" type="button">
+              <img src="rub/1.jpg" alt="" /><span>Phone wallpaper</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/2.jpg" alt="" /><span>Laptop wallpaper</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/3.jpg" alt="" /><span>Iphone wallpaper</span>
+            </button>
+            <button class="sugg" type="button">
+              <img src="rub/4.jpg" alt="" /><span>Cartoon profile pics</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="tabs"><span class="tab">All</span></div>
+
+      <main class="feed">
+        <!-- Replace these sample paths with your own images. -->
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/1.jpg" alt="Photo 1" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/2.jpg" alt="Photo 2" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/3.jpg" alt="Photo 3" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/4.jpg" alt="Photo 4" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/5.jpg" alt="Photo 5" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/6.jpg" alt="Photo 6" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/7.jpg" alt="Photo 7" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/8.jpg" alt="Photo 8" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/9.jpg" alt="Photo 9" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/10.jpg" alt="Photo 10" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/11.jpg" alt="Photo 11" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/12.jpg" alt="Photo 12" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/13.jpg" alt="Photo 13" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/14.jpg" alt="Photo 14" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/15.jpg" alt="Photo 15" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/16.jpg" alt="Photo 16" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/17.jpg" alt="Photo 17" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+        <article class="pin">
+          <button class="save" type="button">Save</button>
+          <div class="thumb-wrap">
+            <img class="thumb" src="rub/18.jpg" alt="Photo 18" />
+          </div>
+          <button class="more" type="button" aria-label="More options">
+            &middot;&middot;&middot;
+          </button>
+        </article>
+      </main>
+    </div>
+
+    <script>
+      const input = document.getElementById("searchInput");
+      const overlay = document.getElementById("searchOverlay");
+      const panel = document.getElementById("searchPanel");
+
+      function openSearch() {
+        document.body.classList.add("search-open");
+      }
+      function closeSearch() {
+        document.body.classList.remove("search-open");
+        input.blur();
+      }
+
+      // Click or focus the search bar -> open the panel
+      input.addEventListener("focus", openSearch);
+      input.addEventListener("click", openSearch);
+
+      // Click the dark area or press Escape -> close
+      overlay.addEventListener("click", closeSearch);
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeSearch();
+      });
+
+      // Click a suggestion -> put its text in the search bar and close
+      panel.querySelectorAll(".sugg").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          input.value = btn.querySelector("span").textContent;
+          closeSearch();
+        });
+      });
+    </script>
+  </body>
+</html>

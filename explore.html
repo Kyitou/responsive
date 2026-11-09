@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Your saved ideas</title>
+    <link rel="icon" type="image/x-icon" href="Pinterest.svg.webp" />
+    <style>
+      :root { --bg:#fff; --ink:#111; --muted:#767676; --field:#e9e9e4; --line:#e5e5e5; --red:#e60023; --sidebar:68px; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+      :focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+      svg.i { display: block; width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+      /* Sidebar */
+      .sidebar { position: fixed; inset: 0 auto 0 0; width: var(--sidebar); z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 20px 0; border-right: 1px solid var(--line); background: var(--bg); }
+      .sidebar .logo { margin-bottom: 14px; }
+      .sidebar .logo img { display: block; width: 32px; height: 32px; object-fit: contain; }
+      .icon-btn { position: relative; display: grid; place-items: center; flex: 0 0 48px; width: 48px; height: 48px; border-radius: 16px; }
+      .icon-btn:hover { background: var(--field); }
+      .icon-btn.active { background: var(--field); }
+      .icon-btn.active svg { fill: currentColor; }
+      .dot { position: absolute; top: 11px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+      .spacer { flex: 1; }
+      .icon-text { position: absolute; top: 50%; left: 56px; z-index: 100; transform: translateY(-50%); padding: 8px 10px; border-radius: 8px; background: #000; color: #fff; font-size: 12px; font-weight: 600; white-space: nowrap; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .15s; }
+      .icon-btn:hover .icon-text, .icon-btn:focus-visible .icon-text { opacity: 1; visibility: visible; }
+
+      /* Top bar */
+      .main { margin-left: var(--sidebar); }
+      .topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 16px; padding: 12px 24px 8px 16px; background: var(--bg); }
+      .search { display: flex; flex: 1; align-items: center; gap: 10px; height: 48px; padding: 0 16px; border-radius: 24px; background: var(--field); }
+      .search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; color: var(--ink); font-size: 16px; }
+      .search input::placeholder { color: var(--muted); }
+      .search .i { width: 20px; height: 20px; color: var(--muted); }
+      .tool { position: relative; }
+      .avatar { display: flex; align-items: center; gap: 6px; }
+      .avatar img, .profile img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+      .avatar .i { width: 16px; height: 16px; color: var(--muted); }
+
+      /* Page header */
+      .wrap { padding: 0 max(24px, 7vw); }
+      .head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 28px; flex-wrap: wrap; }
+      h1 { font-size: 32px; font-weight: 700; }
+      .profile { display: flex; align-items: center; gap: 12px; }
+      .profile img { width: 56px; height: 56px; }
+      .profile b { display: block; font-size: 18px; }
+      .profile small { font-size: 13px; }
+      .btn-grey { padding: 12px 16px; border-radius: 24px; background: var(--field); font-weight: 600; }
+      .btn-red { padding: 14px 18px; border-radius: 16px; background: var(--red); color: #fff; font-weight: 600; }
+      .tabs { display: flex; gap: 20px; margin: 28px 0 20px 6px; font-size: 15px; font-weight: 600; }
+      .tabs span { padding-bottom: 4px; }
+      .tabs .on { border-bottom: 2px solid var(--ink); }
+      .tools { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+      .tools .grow { flex: 1; }
+      .group { padding: 10px 12px; border-radius: 16px; background: var(--field); font-size: 13px; font-weight: 600; }
+
+      /* Empty state */
+      .empty { text-align: center; padding: 8px 0 28px; }
+      .empty svg { width: 160px; height: 150px; }
+      .empty h2 { margin-top: 8px; font-size: 18px; }
+      .empty p { max-width: 280px; margin: 4px auto 10px; font-size: 13px; line-height: 1.35; }
+      .empty .btn-red { padding: 8px 10px; border-radius: 12px; font-size: 13px; }
+      .line { border: 0; border-top: 1px solid var(--line); }
+
+      /* Boards */
+      .section { padding: 40px 18px 0; }
+      .section h2 { font-size: 18px; font-weight: 700; }
+      .section .sub { margin: 14px 0 22px; font-size: 13px; }
+      .boards { display: flex; justify-content: center; gap: 14px; overflow-x: auto; padding-bottom: 10px; }
+      .board { flex: 0 0 212px; }
+      .cover { position: relative; display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; height: 142px; border-radius: 16px; overflow: hidden; background: var(--line); }
+      .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .cover img:first-child { grid-row: 1 / 3; }
+      .pill { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 10px 14px; border-radius: 16px; background: #fff; font-weight: 600; font-size: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+      .board h3 { margin: 10px 0 0 8px; font-size: 18px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .board p { margin: 4px 0 0 8px; font-size: 11px; }
+
+      /* Unorganized ideas */
+      .row { display: flex; align-items: center; justify-content: space-between; padding: 0 8px; margin: 40px 0 18px; }
+      .row h2 { font-size: 18px; font-weight: 700; }
+      .row .btn-grey { padding: 8px 12px; font-size: 13px; }
+      .ideas { column-width: 200px; column-gap: 14px; padding: 0 0 40px; }
+      .idea { display: block; width: 100%; margin-bottom: 14px; border-radius: 16px; break-inside: avoid; background: var(--field); }
+
+      /* Tablet */
+      @media (max-width: 1279px) and (min-width: 481px) {
+        :root { --sidebar: 60px; }
+        .sidebar { gap: 10px; padding: 16px 0; }
+        .sidebar .icon-btn { flex-basis: 44px; width: 44px; height: 44px; }
+        .boards { justify-content: flex-start; }
+        .ideas { column-width: 180px; }
+      }
+      /* Mobile */
+      @media (max-width: 480px) {
+        .sidebar { inset: auto 0 0; flex-direction: row; justify-content: space-around; gap: 0; width: 100%; height: 56px; padding: 0 4px; border-top: 1px solid var(--line); border-right: 0; }
+        .sidebar .logo, .sidebar .spacer { display: none; }
+        .sidebar .icon-btn { flex-basis: 44px; width: 44px; height: 44px; }
+        .icon-text { top: auto; bottom: 50px; left: 50%; transform: translateX(-50%); }
+        .main { margin-left: 0; padding-bottom: 72px; }
+        .topbar { gap: 10px; padding: 8px 10px; }
+        .search { height: 44px; }
+        .wrap { padding: 0 14px; }
+        h1 { font-size: 24px; }
+        .profile { display: none; }
+        .boards { justify-content: flex-start; }
+        .board { flex-basis: 170px; }
+        .cover { height: 115px; }
+        .section { padding: 28px 4px 0; }
+        .ideas { column-count: 2; column-width: auto; column-gap: 8px; }
+        .idea { margin-bottom: 8px; border-radius: 12px; }
+      }
+
+      /* ===== CREATE PANEL ===== */
+      :root { --create-w: 345px; }
+      .main { transition: margin-left 0.2s ease; }
+      .create-panel {
+        position: fixed; top: 0; bottom: 0; left: var(--sidebar); width: var(--create-w);
+        z-index: 15; padding: 22px 22px; overflow-y: auto;
+        border-right: 1px solid var(--line); background: var(--bg);
+        transform: translateX(-110%); visibility: hidden;
+        transition: transform 0.2s ease, visibility 0.2s;
+      }
+      .create-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 22px 0; }
+      .create-head h2 { font-size: 20px; font-weight: 700; }
+      .create-close { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; }
+      .create-close:hover { background: var(--field); }
+      .create-item {
+        display: flex; align-items: flex-start; gap: 14px; width: calc(100% + 16px);
+        margin: 0 -8px 10px; padding: 12px 8px; border-radius: 16px; text-align: left;
+        transition: background 0.15s;
+      }
+      .create-item:hover, .create-item:focus-visible { background: #f3f3ee; }
+      .create-icon {
+        flex: 0 0 54px; width: 54px; height: 54px; border-radius: 16px;
+        display: grid; place-items: center; background: #e6e6e0;
+      }
+      .create-item b { display: block; font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+      .create-item small { display: block; font-size: 13px; line-height: 1.4; color: #333; }
+      .badge-new { margin-left: 6px; padding: 2px 6px; border-radius: 6px; background: #dff5e8; font-size: 12px; font-weight: 500; color: #0a7a43; }
+
+      .create-open .create-panel { transform: none; visibility: visible; }
+      .create-open .main { margin-left: calc(var(--sidebar) + var(--create-w)); }
+      .create-open #createBtn { background: var(--field); }
+
+      @media (max-width: 1279px) and (min-width: 481px) {
+        :root { --create-w: 300px; }
+      }
+      @media (max-width: 480px) {
+        .create-panel { left: 0; width: 100%; bottom: 56px; }
+        .create-open .main { margin-left: 0; }
+      }
+
+      /* ===== NOTIFICATIONS PANEL ===== */
+      .notif-panel {
+        position: fixed; top: 0; bottom: 0; left: var(--sidebar); width: var(--create-w);
+        z-index: 15; padding: 16px 14px 24px 14px; overflow-y: auto;
+        border-right: 1px solid var(--line); background: var(--bg);
+        transform: translateX(-110%); visibility: hidden;
+        transition: transform 0.2s ease, visibility 0.2s;
+      }
+      .notif-head { display: flex; align-items: center; justify-content: space-between; padding: 0 0 0 4px; }
+      .notif-head h2 { font-size: 18px; font-weight: 700; }
+      .notif-sub { margin: 26px 0 10px 4px; font-size: 14px; font-weight: 400; }
+      .notif-item {
+        display: flex; align-items: center; gap: 10px; padding: 6px 4px;
+        border-radius: 16px; transition: background 0.15s;
+      }
+      .notif-item:hover { background: #f3f3ee; }
+      .notif-item img { flex: 0 0 64px; width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: var(--field); }
+      .notif-title { flex: 1; min-width: 0; font-size: 14px; }
+      .notif-item.unread .notif-title { font-weight: 700; }
+      .notif-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 12px; color: var(--muted); }
+      .notif-meta button { padding: 0 6px; font-weight: 700; letter-spacing: 1px; color: var(--ink); }
+
+      .notif-open .notif-panel { transform: none; visibility: visible; }
+      .notif-open .main { margin-left: calc(var(--sidebar) + var(--create-w)); }
+      .notif-open #notifBtn { background: var(--field); }
+      @media (max-width: 480px) {
+        .notif-panel { left: 0; width: 100%; bottom: 56px; }
+        .notif-open .main { margin-left: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="sidebar" aria-label="Main navigation">
+      <a class="logo" href="index.html" aria-label="Pinterest home"><img src="Pinterest.svg.webp" alt="Pinterest logo" width="32" height="32" /></a>
+
+      <button class="icon-btn" type="button" aria-label="Home" onclick="window.location.href='index.html'">
+        <svg class="i" viewBox="0 0 24 24"><path d="M12 3C7 3 3.5 7 3.5 12v8h17v-8C20.5 7 17 3 12 3z" /></svg>
+        <span class="icon-text">Home</span>
+      </button>
+      <!-- Explore: current page -->
+      <button class="icon-btn active" type="button" aria-label="Explore" aria-current="page">
+        <svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" /><path d="M3 12h18M12 3v18" /></svg>
+        <span class="icon-text">Explore</span>
+      </button>
+      <button class="icon-btn" type="button" aria-label="Create" id="createBtn">
+        <svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" /><path d="M12 8v8M8 12h8" /></svg>
+        <span class="icon-text">Create</span>
+      </button>
+      <button class="icon-btn" type="button" aria-label="Updates" id="notifBtn">
+        <svg class="i" viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z" /><path d="M10 21h4" /></svg>
+        <span class="dot" aria-hidden="true"></span>
+        <span class="icon-text">Updates</span>
+      </button>
+      <button class="icon-btn" type="button" aria-label="Messages">
+        <svg class="i" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18h8l-2-3.5A9 9 0 0 0 12 3z" /><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" /></svg>
+        <span class="icon-text">Messages</span>
+      </button>
+      <button class="icon-btn" type="button" aria-label="Filters">
+        <svg class="i" viewBox="0 0 24 24"><path d="M5 3v18M12 3v18M19 3v18M3 8h4M10 15h4M17 10h4" /></svg>
+        <span class="icon-text">Filters</span>
+      </button>
+      <div class="spacer"></div>
+      <button class="icon-btn" type="button" aria-label="Settings">
+        <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" /></svg>
+        <span class="icon-text">Settings</span>
+      </button>
+    </nav>
+
+    <!-- Create panel -->
+    <aside class="create-panel" id="createPanel" aria-label="Create">
+      <div class="create-head">
+        <h2>Create</h2>
+        <button class="create-close" id="createClose" type="button" aria-label="Close">
+          <svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </div>
+
+      <button class="create-item" type="button">
+        <span class="create-icon"><svg class="i" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-3 4h10l-3-4V3M12 13v8" /></svg></span>
+        <span><b>Pin</b><small>Post your photos or videos and add links, stickers, effects and more</small></span>
+      </button>
+
+      <button class="create-item" type="button">
+        <span class="create-icon"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M10 4v16M10 12h11" /></svg></span>
+        <span><b>Board</b><small>Organize a collection of your favorite Pins by creating a board</small></span>
+      </button>
+
+      <button class="create-item" type="button">
+        <span class="create-icon"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="14" height="16" rx="3" /><path d="M8 12l3-3 4 5M18 9l3 2-3 9" /></svg></span>
+        <span><b>Collage</b><small>Mix and match ideas to build your vision and create something new</small></span>
+      </button>
+
+      <button class="create-item" type="button">
+        <span class="create-icon"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M4 7l8 6 8-6" /></svg></span>
+        <span><b>Card <span class="badge-new">New</span></b><small>Choose a Pin, add a message, and send it as a digital card to someone special</small></span>
+      </button>
+    </aside>
+
+    <!-- Notifications panel -->
+    <aside class="notif-panel" id="notifPanel" aria-label="Notifications">
+      <div class="notif-head">
+        <h2>Notifications</h2>
+        <button class="create-close" id="notifClose" type="button" aria-label="Close">
+          <svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </div>
+      <h3 class="notif-sub">Updates</h3>
+      <div class="notif-item unread">
+        <img src="rub/1.jpg" alt="" />
+        <span class="notif-title">Cardboard Display Design</span>
+        <span class="notif-meta"><time>2d</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item">
+        <img src="rub/2.jpg" alt="" />
+        <span class="notif-title">For you</span>
+        <span class="notif-meta"><time>1w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item unread">
+        <img src="rub/3.jpg" alt="" />
+        <span class="notif-title">Floor Stand Display</span>
+        <span class="notif-meta"><time>1w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item unread">
+        <img src="rub/4.jpg" alt="" />
+        <span class="notif-title">Coffee Ad Design</span>
+        <span class="notif-meta"><time>1w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item">
+        <img src="rub/5.jpg" alt="" />
+        <span class="notif-title">This is totally you</span>
+        <span class="notif-meta"><time>1w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item unread">
+        <img src="rub/6.jpg" alt="" />
+        <span class="notif-title">Juice Drink Posters</span>
+        <span class="notif-meta"><time>1w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item unread">
+        <img src="rub/7.jpg" alt="" />
+        <span class="notif-title">Tom and Jerry Wallpapers</span>
+        <span class="notif-meta"><time>1w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item unread">
+        <img src="rub/8.jpg" alt="" />
+        <span class="notif-title">Orange Cat Wallpapers</span>
+        <span class="notif-meta"><time>2w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item">
+        <img src="rub/9.jpg" alt="" />
+        <span class="notif-title">So you</span>
+        <span class="notif-meta"><time>2w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item">
+        <img src="rub/10.jpg" alt="" />
+        <span class="notif-title">This is gold</span>
+        <span class="notif-meta"><time>2w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item">
+        <img src="rub/11.jpg" alt="" />
+        <span class="notif-title">For you</span>
+        <span class="notif-meta"><time>2w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item">
+        <img src="rub/12.jpg" alt="" />
+        <span class="notif-title">It all fits</span>
+        <span class="notif-meta"><time>2w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item">
+        <img src="rub/13.jpg" alt="" />
+        <span class="notif-title">So iconic</span>
+        <span class="notif-meta"><time>2w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item">
+        <img src="rub/14.jpg" alt="" />
+        <span class="notif-title">Born for this</span>
+        <span class="notif-meta"><time>2w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+      <div class="notif-item">
+        <img src="rub/15.jpg" alt="" />
+        <span class="notif-title">This one's so you</span>
+        <span class="notif-meta"><time>3w</time><button type="button" aria-label="More options">&middot;&middot;&middot;</button></span>
+      </div>
+    </aside>
+
+
+
+    <div class="main">
+      <header class="topbar">
+        <label class="search">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M21 21l-5-5" /></svg>
+          <input type="search" placeholder="Search your Pins" aria-label="Search your Pins" />
+        </label>
+        <button class="tool" type="button" aria-label="Voice search">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
+        </button>
+        <button class="avatar" type="button" aria-label="Account menu">
+          <img src="Pinterest.svg.webp" alt="Account" width="32" height="32" />
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+        </button>
+      </header>
+
+      <div class="wrap">
+        <div class="head">
+          <h1>Your saved ideas</h1>
+          <div class="profile">
+            <img src="Pinterest.svg.webp" alt="Profile" />
+            <div><b>Vitou Chhery</b><small>0 followers &middot; <b style="display:inline;font-size:13px">2 following</b></small></div>
+            <button class="btn-grey" type="button">Share profile</button>
+          </div>
+        </div>
+
+        <div class="tabs"><span>Pins</span><span class="on">Boards</span></div>
+
+        <div class="tools">
+          <button type="button" aria-label="Filter"><svg class="i" viewBox="0 0 24 24"><path d="M3 8h8M15 8h6M3 16h4M11 16h10" /><circle cx="13" cy="8" r="2" /><circle cx="9" cy="16" r="2" /></svg></button>
+          <button class="group" type="button">Group</button>
+          <span class="grow"></span>
+          <button class="btn-red" type="button">Create</button>
+        </div>
+
+        <div class="empty">
+          <svg viewBox="0 0 160 150" aria-hidden="true">
+            <rect x="12" y="8" width="136" height="118" rx="4" fill="#fbd5ec" />
+            <rect x="20" y="14" width="120" height="100" fill="#f4623a" stroke="#f08c5a" stroke-width="3" />
+            <rect x="30" y="26" width="26" height="24" fill="#ff9a3c" transform="rotate(-8 43 38)" />
+            <rect x="62" y="30" width="24" height="24" fill="#f7e46a" transform="rotate(6 74 42)" />
+            <rect x="94" y="24" width="24" height="22" fill="#ffb347" />
+            <rect x="32" y="62" width="24" height="24" fill="#f7e46a" />
+            <rect x="66" y="68" width="22" height="22" fill="#fff" />
+            <rect x="96" y="64" width="24" height="24" fill="#d9a7f0" transform="rotate(-6 108 76)" />
+            <rect x="48" y="92" width="26" height="24" fill="#c77de0" transform="rotate(-8 61 104)" />
+            <rect x="82" y="94" width="26" height="22" fill="#7be0b5" />
+          </svg>
+          <h2>Organize your ideas</h2>
+          <p>Pins are sparks of inspiration. Boards are where they live. Create boards to organize your Pins your way.</p>
+          <button class="btn-red" type="button">Create a board</button>
+        </div>
+      </div>
+      <hr class="line" />
+
+      <div class="section">
+        <h2>Keep track of what inspires you</h2>
+        <p class="sub">Boards let you organize the Pins you save into collections. Start from a cluster below, or create your own.</p>
+        <div class="boards">
+        <article class="board">
+          <div class="cover">
+            <img src="rub/1.jpg" alt="" /><img src="rub/2.jpg" alt="" /><img src="rub/3.jpg" alt="" />
+            <button class="pill" type="button">Create</button>
+          </div>
+          <h3>Cute cats</h3>
+          <p>12 Pins</p>
+        </article>
+        <article class="board">
+          <div class="cover">
+            <img src="rub/4.jpg" alt="" /><img src="rub/5.jpg" alt="" /><img src="rub/6.jpg" alt="" />
+            <button class="pill" type="button">Create</button>
+          </div>
+          <h3>Kid goku</h3>
+          <p>10 Pins</p>
+        </article>
+        <article class="board">
+          <div class="cover">
+            <img src="rub/7.jpg" alt="" /><img src="rub/8.jpg" alt="" /><img src="rub/9.jpg" alt="" />
+            <button class="pill" type="button">Create</button>
+          </div>
+          <h3>Nature photography</h3>
+          <p>10 Pins</p>
+        </article>
+        <article class="board">
+          <div class="cover">
+            <img src="rub/10.jpg" alt="" /><img src="rub/11.jpg" alt="" /><img src="rub/12.jpg" alt="" />
+            <button class="pill" type="button">Create</button>
+          </div>
+          <h3>Cute doodles</h3>
+          <p>10 Pins</p>
+        </article>
+        <article class="board">
+          <div class="cover">
+            <img src="rub/13.jpg" alt="" /><img src="rub/14.jpg" alt="" /><img src="rub/15.jpg" alt="" />
+            <button class="pill" type="button">Create</button>
+          </div>
+          <h3>Sinchan cartoon</h3>
+          <p>5 Pins</p>
+        </article>
+        <article class="board">
+          <div class="cover">
+            <img src="rub/16.jpg" alt="" /><img src="rub/17.jpg" alt="" /><img src="rub/18.jpg" alt="" />
+            <button class="pill" type="button">Create</button>
+          </div>
+          <h3>Funny memes</h3>
+          <p>5 Pins</p>
+        </article>
+        <article class="board">
+          <div class="cover">
+            <img src="rub/1.jpg" alt="" /><img src="rub/2.jpg" alt="" /><img src="rub/3.jpg" alt="" />
+            <button class="pill" type="button">Create</button>
+          </div>
+          <h3>Aesthetic art</h3>
+          <p>4 Pins</p>
+        </article>
+        <article class="board">
+          <div class="cover">
+            <img src="rub/4.jpg" alt="" /><img src="rub/5.jpg" alt="" /><img src="rub/6.jpg" alt="" />
+            <button class="pill" type="button">Create</button>
+          </div>
+          <h3>Mobile legends</h3>
+          <p>3 Pins</p>
+        </article>
+        <article class="board">
+          <div class="cover">
+            <img src="rub/7.jpg" alt="" /><img src="rub/8.jpg" alt="" /><img src="rub/9.jpg" alt="" />
+            <button class="pill" type="button">Create</button>
+          </div>
+          <h3>Poster background...</h3>
+          <p>3 Pins</p>
+        </article>
+        <article class="board">
+          <div class="cover">
+            <img src="rub/10.jpg" alt="" /><img src="rub/11.jpg" alt="" /><img src="rub/12.jpg" alt="" />
+            <button class="pill" type="button">Create</button>
+          </div>
+          <h3>Angkor</h3>
+          <p>3 Pins</p>
+        </article>
+        </div>
+
+        <div class="row">
+          <h2>Unorganized ideas</h2>
+          <button class="btn-grey" type="button">Organize</button>
+        </div>
+        <div class="ideas">
+        <img class="idea" src="rub/1.jpg" alt="Saved idea 1" />
+        <img class="idea" src="rub/2.jpg" alt="Saved idea 2" />
+        <img class="idea" src="rub/3.jpg" alt="Saved idea 3" />
+        <img class="idea" src="rub/4.jpg" alt="Saved idea 4" />
+        <img class="idea" src="rub/5.jpg" alt="Saved idea 5" />
+        <img class="idea" src="rub/6.jpg" alt="Saved idea 6" />
+        <img class="idea" src="rub/7.jpg" alt="Saved idea 7" />
+        <img class="idea" src="rub/8.jpg" alt="Saved idea 8" />
+        <img class="idea" src="rub/9.jpg" alt="Saved idea 9" />
+        <img class="idea" src="rub/10.jpg" alt="Saved idea 10" />
+        <img class="idea" src="rub/11.jpg" alt="Saved idea 11" />
+        <img class="idea" src="rub/12.jpg" alt="Saved idea 12" />
+        <img class="idea" src="rub/13.jpg" alt="Saved idea 13" />
+        <img class="idea" src="rub/14.jpg" alt="Saved idea 14" />
+        <img class="idea" src="rub/15.jpg" alt="Saved idea 15" />
+        <img class="idea" src="rub/16.jpg" alt="Saved idea 16" />
+        <img class="idea" src="rub/17.jpg" alt="Saved idea 17" />
+        <img class="idea" src="rub/18.jpg" alt="Saved idea 18" />
+        </div>
+      </div>
+    </div>
+    <script>
+      // Side panels: Create and Notifications (only one open at a time)
+      (function () {
+        const panels = [
+          { cls: "create-open", btn: "createBtn", close: "createClose" },
+          { cls: "notif-open", btn: "notifBtn", close: "notifClose" },
+        ];
+        function setOpen(active, open) {
+          panels.forEach(function (p) {
+            const isOpen = open && p === active;
+            document.body.classList.toggle(p.cls, isOpen);
+            document.getElementById(p.btn).setAttribute("aria-expanded", isOpen ? "true" : "false");
+          });
+        }
+        panels.forEach(function (p) {
+          document.getElementById(p.btn).addEventListener("click", function () {
+            setOpen(p, !document.body.classList.contains(p.cls));
+          });
+          document.getElementById(p.close).addEventListener("click", function () {
+            setOpen(p, false);
+          });
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape") setOpen(null, false);
+        });
+      })();
+    </script>
+  </body>
+</html>

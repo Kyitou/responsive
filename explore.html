@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Your saved ideas</title>
     <link rel="icon" type="image/x-icon" href="Pinterest.svg.webp" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       :root { --bg:#fff; --ink:#111; --muted:#767676; --field:#e9e9e4; --line:#e5e5e5; --red:#e60023; --sidebar:68px; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -180,6 +183,87 @@
         .notif-panel { left: 0; width: 100%; bottom: 56px; }
         .notif-open .main { margin-left: 0; }
       }
+
+      /* ===== MESSAGES PANEL ===== */
+      .msg-panel {
+        position: fixed; top: 0; bottom: 0; left: var(--sidebar); width: var(--create-w);
+        z-index: 15; padding: 20px 14px 24px; overflow-y: auto;
+        border-right: 1px solid var(--line); background: var(--bg);
+        transform: translateX(-110%); visibility: hidden;
+        transition: transform 0.2s ease, visibility 0.2s;
+      }
+      .msg-head { display: flex; align-items: center; justify-content: space-between; padding-left: 12px; }
+      .msg-head h2 { font-size: 20px; font-weight: 700; }
+      .msg-sub { margin: 22px 0 8px 12px; font-size: 15px; font-weight: 400; }
+      .msg-row {
+        display: flex; align-items: center; gap: 12px; width: 100%;
+        padding: 8px 12px; border-radius: 16px; text-align: left; transition: background 0.15s;
+      }
+      .msg-row:hover { background: #f3f3ee; }
+      .msg-new { margin-top: 18px; font-size: 16px; }
+      .msg-circle {
+        flex: 0 0 54px; width: 54px; height: 54px; border-radius: 50%;
+        display: grid; place-items: center; background: #e6e6e0; font-size: 20px; font-weight: 500;
+      }
+      .msg-circle.red { background: var(--red); color: #fff; }
+      .msg-avatar { flex: 0 0 54px; width: 54px; height: 54px; border-radius: 50%; object-fit: cover; background: var(--field); }
+      .msg-text { flex: 1; min-width: 0; }
+      .msg-text b { display: block; font-size: 16px; font-weight: 600; }
+      .msg-text b.n { font-weight: 500; }
+      .msg-text small { display: block; margin-top: 3px; font-size: 16px; }
+      .msg-text .grey { color: var(--muted); }
+      .msg-time { align-self: flex-start; margin-top: 14px; font-size: 14px; color: var(--muted); }
+      .msg-invite { margin-top: 26px; }
+
+      .msg-open .msg-panel { transform: none; visibility: visible; }
+      .msg-open .main { margin-left: calc(var(--sidebar) + var(--create-w)); }
+      .msg-open #msgBtn { background: var(--field); }
+      @media (max-width: 480px) {
+        .msg-panel { left: 0; width: 100%; bottom: 56px; }
+        .msg-open .main { margin-left: 0; }
+      }
+
+      /* ===== SETTINGS & SUPPORT PANEL ===== */
+      :root { --set-w: 430px; }
+      .set-panel {
+        position: fixed; top: 0; bottom: 0; left: var(--sidebar); width: var(--set-w);
+        z-index: 15; padding: 20px 14px 24px; overflow-y: auto;
+        border-right: 1px solid var(--line); background: var(--bg);
+        transform: translateX(-110%); visibility: hidden;
+        transition: transform 0.2s ease, visibility 0.2s;
+      }
+      .set-head { display: flex; align-items: center; justify-content: space-between; padding: 0 0 8px 12px; }
+      .set-head h2 { font-size: 20px; font-weight: 700; }
+      .set-row {
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        padding: 10px 12px; border-radius: 12px; font-size: 16px; color: var(--ink); text-decoration: none;
+      }
+      a.set-row:hover { background: #f3f3ee; }
+      .set-row.on { background: #f0f0eb; }
+      .set-row .ext { font-weight: 400; font-size: 18px; margin-right: 6px; }
+      .set-row select {
+        max-width: 190px; padding: 6px 10px; border: 1px solid #cdcdc7; border-radius: 12px;
+        background: var(--bg); color: var(--ink); font: inherit; font-size: 15px; cursor: pointer;
+      }
+      .set-label { margin: 18px 0 4px 12px; font-size: 13px; font-weight: 600; color: #333; }
+      .set-links { margin: 6px 0 6px 12px; font-size: 15px; }
+      .set-links a { margin-right: 6px; color: #2347c5; text-decoration: none; }
+      .set-links a:hover { text-decoration: underline; }
+
+      .set-open .set-panel { transform: none; visibility: visible; }
+      .set-open .main { margin-left: calc(var(--sidebar) + var(--set-w)); }
+      .set-open #settingsBtn { background: var(--field); }
+      @media (max-width: 1279px) and (min-width: 481px) { :root { --set-w: 360px; } }
+      @media (max-width: 480px) {
+        .set-panel { left: 0; width: 100%; bottom: 56px; }
+        .set-open .main { margin-left: 0; }
+      }
+
+      /* Khmer font */
+      body.lang-km, body.lang-km button, body.lang-km input, body.lang-km select {
+        /* English letters keep your original font; Khmer letters use Kantumruy Pro */
+        font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Kantumruy Pro", sans-serif;
+      }
     </style>
   </head>
   <body>
@@ -204,16 +288,16 @@
         <span class="dot" aria-hidden="true"></span>
         <span class="icon-text">Updates</span>
       </button>
-      <button class="icon-btn" type="button" aria-label="Messages">
+      <button class="icon-btn" type="button" aria-label="Messages" id="msgBtn">
         <svg class="i" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18h8l-2-3.5A9 9 0 0 0 12 3z" /><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" /></svg>
         <span class="icon-text">Messages</span>
       </button>
-      <button class="icon-btn" type="button" aria-label="Filters">
+      <button class="icon-btn" type="button" aria-label="Filters" onclick="window.location.href='filter.html'">
         <svg class="i" viewBox="0 0 24 24"><path d="M5 3v18M12 3v18M19 3v18M3 8h4M10 15h4M17 10h4" /></svg>
         <span class="icon-text">Filters</span>
       </button>
       <div class="spacer"></div>
-      <button class="icon-btn" type="button" aria-label="Settings">
+      <button class="icon-btn" type="button" aria-label="Settings" id="settingsBtn">
         <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" /></svg>
         <span class="icon-text">Settings</span>
       </button>
@@ -335,6 +419,82 @@
       </div>
     </aside>
 
+    <!-- Messages panel -->
+    <aside class="msg-panel" id="msgPanel" aria-label="Messages panel">
+      <div class="msg-head">
+        <h2>Messages</h2>
+        <button class="create-close" id="msgClose" type="button" aria-label="Close">
+          <svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </div>
+
+      <button class="msg-row msg-new" type="button">
+        <span class="msg-circle red"><svg class="i" viewBox="0 0 24 24"><path d="M12 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-6" /><path d="M17.500 3.500a2.100 2.100 0 0 1 3 3L12 15l-4 1 1-4z" /></svg></span>
+        <b>New message</b>
+      </button>
+
+      <h3 class="msg-sub">Messages</h3>
+      <button class="msg-row" type="button">
+        <img class="msg-avatar" src="rub/1.jpg" alt="" />
+        <span class="msg-text"><b class="n">Saeed</b><small class="grey">You sent a Pin</small></span>
+        <span class="msg-time">3y</span>
+      </button>
+
+      <h3 class="msg-sub">Suggested</h3>
+      <button class="msg-row" type="button">
+        <span class="msg-circle letter">T</span>
+        <span class="msg-text"><b>Takama Idrissi</b><small>@takamaidrissi1997</small></span>
+      </button>
+      <button class="msg-row" type="button">
+        <img class="msg-avatar" src="rub/2.jpg" alt="" />
+        <span class="msg-text"><b>Chlodwald K.</b><small>@chlodwald</small></span>
+      </button>
+
+      <button class="msg-row msg-invite" type="button">
+        <span class="msg-circle"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.500" /><path d="M3 20c0-3.300 2.700-6 6-6M17 14v6M14 17h6" /></svg></span>
+        <span class="msg-text"><b>Invite your friends</b><small class="grey">Connect to start chatting</small></span>
+      </button>
+    </aside>
+
+    <!-- Settings & Support panel -->
+    <aside class="set-panel" id="setPanel" aria-label="Settings and support">
+      <div class="set-head">
+        <h2>Settings &amp; Support</h2>
+        <button class="create-close" id="setClose" type="button" aria-label="Close">
+          <svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </div>
+
+      <a class="set-row on" href="filter.html"><span>Settings</span></a>
+      <a class="set-row" href="filter.html"><span>Refine your recommendations</span></a>
+      <a class="set-row" href="#"><span>Link to Pinterest</span></a>
+      <a class="set-row" href="#"><span>Reports and violations center</span></a>
+      <a class="set-row" href="#"><span>Be a beta tester</span><b class="ext" aria-hidden="true">&#8599;</b></a>
+
+      <div class="set-row lang">
+        <span>Language</span>
+        <select id="langSelect" aria-label="Language">
+          <option value="en">English</option>
+          <option value="km">ភាសាខ្មែរ (Khmer)</option>
+        </select>
+      </div>
+
+      <h3 class="set-label">Support</h3>
+      <a class="set-row" href="#"><span>Help center</span><b class="ext" aria-hidden="true">&#8599;</b></a>
+      <a class="set-row" href="#"><span>Create widget</span><b class="ext" aria-hidden="true">&#8599;</b></a>
+      <a class="set-row" href="#"><span>Removals</span><b class="ext" aria-hidden="true">&#8599;</b></a>
+      <a class="set-row" href="#"><span>Personalized Ads</span><b class="ext" aria-hidden="true">&#8599;</b></a>
+      <a class="set-row" href="#"><span>Your privacy rights</span></a>
+      <a class="set-row" href="#"><span>Privacy policy</span><b class="ext" aria-hidden="true">&#8599;</b></a>
+      <a class="set-row" href="#"><span>Terms of service</span><b class="ext" aria-hidden="true">&#8599;</b></a>
+
+      <h3 class="set-label">Resources</h3>
+      <p class="set-links"><a href="#">About</a> <a href="#">Blog</a> <a href="#">Businesses</a></p>
+      <p class="set-links"><a href="#">Careers</a> <a href="#">Developers</a></p>
+    </aside>
+
+
+
 
 
     <div class="main">
@@ -347,7 +507,7 @@
           <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
         </button>
         <button class="avatar" type="button" aria-label="Account menu">
-          <img src="dragon.jpg" alt="Account" width="32" height="32" />
+          <img src="Pinterest.svg.webp" alt="Account" width="32" height="32" />
           <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
         </button>
       </header>
@@ -356,8 +516,8 @@
         <div class="head">
           <h1>Your saved ideas</h1>
           <div class="profile">
-            <img src="dragon.jpg" alt="Profile" />
-            <div><b>Vitou Chhery</b><small>82 followers &middot; <b style="display:inline;font-size:13px">2 following</b></small></div>
+            <img src="Pinterest.svg.webp" alt="Profile" />
+            <div><b>Vitou Chhery</b><small>0 followers &middot; <b style="display:inline;font-size:13px">2 following</b></small></div>
             <button class="btn-grey" type="button">Share profile</button>
           </div>
         </div>
@@ -509,6 +669,8 @@
         const panels = [
           { cls: "create-open", btn: "createBtn", close: "createClose" },
           { cls: "notif-open", btn: "notifBtn", close: "notifClose" },
+          { cls: "msg-open", btn: "msgBtn", close: "msgClose" },
+          { cls: "set-open", btn: "settingsBtn", close: "setClose" },
         ];
         function setOpen(active, open) {
           panels.forEach(function (p) {
@@ -528,6 +690,43 @@
         document.addEventListener("keydown", function (e) {
           if (e.key === "Escape") setOpen(null, false);
         });
+      })();
+    </script>
+    <script>
+      // Language: English / Khmer (translates the page text)
+      (function () {
+        const KM = {"Home": "ទំព័រដើម", "Explore": "រុករក", "Create": "បង្កើត", "Updates": "ព័ត៌មានថ្មីៗ", "Messages": "សារ", "Filters": "តម្រង", "Settings": "ការកំណត់", "Search": "ស្វែងរក", "Search your Pins": "ស្វែងរកភីនរបស់អ្នក", "Search by image": "ស្វែងរកតាមរូបភាព", "Voice search": "ស្វែងរកតាមសំឡេង", "All": "ទាំងអស់", "Save": "រក្សាទុក", "Recent searches": "ការស្វែងរកថ្មីៗ", "Ideas for you": "គំនិតសម្រាប់អ្នក", "Popular on Pinterest": "ពេញនិយមនៅលើ Pinterest", "Pin": "ភីន", "Board": "ក្តារ", "Collage": "កូឡាច", "Card": "កាត", "New": "ថ្មី", "Post your photos or videos and add links, stickers, effects and more": "ផុសរូបថត ឬវីដេអូរបស់អ្នក ហើយបន្ថែមតំណ ស្ទីកគ័រ ឥទ្ធិពល និងច្រើនទៀត", "Organize a collection of your favorite Pins by creating a board": "រៀបចំបណ្តុំភីនដែលអ្នកចូលចិត្ត ដោយបង្កើតក្តារ", "Mix and match ideas to build your vision and create something new": "លាយបញ្ចូលគំនិតផ្សេងៗ ដើម្បីបង្កើតចក្ខុវិស័យ និងអ្វីមួយថ្មី", "Choose a Pin, add a message, and send it as a digital card to someone special": "ជ្រើសរើសភីន បន្ថែមសារ ហើយផ្ញើជាកាតឌីជីថលទៅកាន់មនុស្សពិសេស", "Notifications": "ការជូនដំណឹង", "New message": "សារថ្មី", "Suggested": "ការណែនាំ", "You sent a Pin": "អ្នកបានផ្ញើភីន", "Invite your friends": "អញ្ជើញមិត្តភក្តិរបស់អ្នក", "Connect to start chatting": "ភ្ជាប់ដើម្បីចាប់ផ្តើមជជែក", "Settings & Support": "ការកំណត់ និងជំនួយ", "Refine your recommendations": "កែលម្អការណែនាំរបស់អ្នក", "Link to Pinterest": "តភ្ជាប់ទៅ Pinterest", "Reports and violations center": "មជ្ឈមណ្ឌលរបាយការណ៍ និងការរំលោភ", "Be a beta tester": "ក្លាយជាអ្នកសាកល្បងបេតា", "Language": "ភាសា", "Support": "ជំនួយ", "Help center": "មជ្ឈមណ្ឌលជំនួយ", "Create widget": "បង្កើតវិដជិត", "Removals": "ការលុបចេញ", "Personalized Ads": "ពាណិជ្ជកម្មផ្ទាល់ខ្លួន", "Your privacy rights": "សិទ្ធិឯកជនភាពរបស់អ្នក", "Privacy policy": "គោលការណ៍ឯកជនភាព", "Terms of service": "លក្ខខណ្ឌសេវាកម្ម", "Resources": "ធនធាន", "About": "អំពី", "Blog": "ប្លុក", "Businesses": "អាជីវកម្ម", "Careers": "អាជីព", "Developers": "អ្នកអភិវឌ្ឍន៍", "Your saved ideas": "គំនិតដែលអ្នករក្សាទុក", "Pins": "ភីន", "Boards": "ក្តារ", "Group": "ក្រុម", "Share profile": "ចែករំលែកប្រូហ្វាល", "Organize your ideas": "រៀបចំគំនិតរបស់អ្នក", "Create a board": "បង្កើតក្តារ", "Keep track of what inspires you": "តាមដានអ្វីដែលបំផុសគំនិតអ្នក", "Unorganized ideas": "គំនិតដែលមិនទាន់រៀបចំ", "Organize": "រៀបចំ", "Boards let you organize the Pins you save into collections. Start from a cluster below, or create your own.": "ក្តារអនុញ្ញាតឱ្យអ្នករៀបចំភីនដែលអ្នករក្សាទុកជាបណ្តុំ។ ចាប់ផ្តើមពីក្រុមខាងក្រោម ឬបង្កើតផ្ទាល់ខ្លួន។", "Edit profile": "កែប្រូហ្វាល", "Account management": "គ្រប់គ្រងគណនី", "Profile visibility": "ភាពមើលឃើញនៃប្រូហ្វាល", "Display settings": "ការកំណត់ការបង្ហាញ", "Social permissions": "ការអនុញ្ញាតសង្គម", "Privacy and data": "ភាពឯកជន និងទិន្នន័យ", "Security": "សុវត្ថិភាព", "Branded Content": "មាតិកាម៉ាក", "Labs": "មន្ទីរពិសោធន៍", "AI content": "មាតិកា AI", "Activity": "សកម្មភាព", "Architecture": "ស្ថាបត្យកម្ម", "Art": "សិល្បៈ", "Beauty": "សម្រស់", "Entertainment": "ការកម្សាន្ត", "Fashion": "ម៉ូដ", "Food & drink": "អាហារ និងភេសជ្ជៈ", "Health": "សុខភាព", "Home decor": "ការតុបតែងផ្ទះ", "Sport": "កីឡា"};
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+          acceptNode: function (n) {
+            const p = n.parentNode;
+            if (!p || /^(SCRIPT|STYLE|OPTION)$/.test(p.nodeName)) return NodeFilter.FILTER_REJECT;
+            return n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+          },
+        });
+        const textNodes = [];
+        while (walker.nextNode()) textNodes.push(walker.currentNode);
+        const inputs = Array.prototype.slice.call(document.querySelectorAll("[placeholder]"));
+        const select = document.getElementById("langSelect");
+
+        function apply(lang) {
+          document.body.classList.toggle("lang-km", lang === "km");
+          document.documentElement.lang = lang === "km" ? "km" : "en";
+          textNodes.forEach(function (n) {
+            if (n._en === undefined) n._en = n.nodeValue;
+            const key = n._en.replace(/\s+/g, " ").trim();
+            n.nodeValue = lang === "km" && KM[key] ? KM[key] : n._en;
+          });
+          inputs.forEach(function (el) {
+            if (el._en === undefined) el._en = el.getAttribute("placeholder");
+            el.setAttribute("placeholder", lang === "km" && KM[el._en] ? KM[el._en] : el._en);
+          });
+          select.value = lang;
+          try { localStorage.setItem("lang", lang); } catch (e) {}
+        }
+        select.addEventListener("change", function () { apply(select.value); });
+        let saved = "en";
+        try { saved = localStorage.getItem("lang") || "en"; } catch (e) {}
+        apply(saved);
       })();
     </script>
   </body>
